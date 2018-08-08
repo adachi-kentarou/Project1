@@ -262,7 +262,7 @@ namespace GameState {
 			std::normal_distribution<> intervalRange(2.0, 0.5);
 			interval += glm::clamp(intervalRange(game.Rand()), 0.5, 3.0);
 		}
-
+		
 		char str[16];
 		snprintf(str, 16, "%08.0f", game.Variable("score"));
 		game.FontScale(glm::vec2(1.0f, 1.0f));
