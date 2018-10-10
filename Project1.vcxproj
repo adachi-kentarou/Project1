@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{0D02E6E9-A830-488D-8AD9-EF307C21FAC2}</ProjectGuid>
     <RootNamespace>Project1</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -76,12 +76,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\include;D:\cri\pc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)cri\pc\include;D:\cri\pc\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;libfbxsdk-md.lib;cri_ware_pcx86_le_import.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\cri\pc\libs\x86;D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x86\debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;cri_ware_pcx86_le_import.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\cri\pc\libs\x86;D:\Program Files\Autodesk\2019.0\lib\vs2015\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -90,11 +90,11 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)cri\pc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;cri_ware_pcx86_le_import.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\cri\pc\libs\x86;D:\Program Files\Autodesk\2019.0\lib\vs2015\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,14 +105,15 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\include;D:\cri\pc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\cri\pc\include;D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\include;D:\cri\pc\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>opengl32.lib;libfbxsdk-md.lib;cri_ware_pcx86_le_import.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\cri\pc\libs\x86;D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x86</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\cri\pc\libs\x86;D:\Program Files\Autodesk\2019.0\lib\vs2015\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>NotSet</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,26 +124,34 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\cri\pc\include;D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>opengl32.lib;libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\Program Files\2019.0Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\cri\pc\libs\x86;D:\Program Files\Autodesk\2019.0\lib\vs2015\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>NotSet</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Src\Audio.cpp" />
     <ClCompile Include="Src\BufferObject.cpp" />
+    <ClCompile Include="Src\Charactor.cpp" />
+    <ClCompile Include="Src\EnemyCharactor.cpp" />
     <ClCompile Include="Src\Font.cpp" />
     <ClCompile Include="Src\GameEngine.cpp" />
     <ClCompile Include="Src\Entity.cpp" />
     <ClCompile Include="Src\GLFWGW.cpp" />
+    <ClCompile Include="Src\Item.cpp" />
+    <ClCompile Include="Src\LoadState.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MainGameState.cpp" />
+    <ClCompile Include="Src\Map.cpp" />
     <ClCompile Include="Src\Mesh.cpp" />
+    <ClCompile Include="Src\Node.cpp" />
     <ClCompile Include="Src\OffscreenBuffer.cpp" />
+    <ClCompile Include="Src\PlayerCharactor.cpp" />
     <ClCompile Include="Src\Shader.cpp" />
     <ClCompile Include="Src\Texture.cpp" />
     <ClCompile Include="Src\TitleState.cpp" />
@@ -164,12 +173,17 @@
     <None Include="Res\Toroid.fbx" />
     <None Include="Res\Tutorial.frag" />
     <None Include="Res\Tutorial.vert" />
+    <None Include="Res\Tutorial2.frag" />
+    <None Include="Res\Tutorial2.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Res\Audio\SampleCueSheet.h" />
     <ClInclude Include="Res\Audio\SampleSound_acf.h" />
     <ClInclude Include="Src\Audio.h" />
     <ClInclude Include="Src\BufferObject.h" />
+    <ClInclude Include="Src\Charactor.h" />
+    <ClInclude Include="Src\Constants.h" />
+    <ClInclude Include="Src\EnemyCharactor.h" />
     <ClInclude Include="Src\Entity.h" />
     <ClInclude Include="Src\Font.h" />
     <ClInclude Include="Src\GameEngine.h" />
@@ -177,8 +191,13 @@
     <ClInclude Include="Src\GameState.h" />
     <ClInclude Include="Src\GLFWEW.h" />
     <ClInclude Include="Src\InterfaceBlock.h" />
+    <ClInclude Include="Src\Item.h" />
+    <ClInclude Include="Src\LoadState.h" />
+    <ClInclude Include="Src\Map.h" />
     <ClInclude Include="Src\Mesh.h" />
+    <ClInclude Include="Src\Node.h" />
     <ClInclude Include="Src\OffscreenBuffer.h" />
+    <ClInclude Include="Src\PlayerCharactor.h" />
     <ClInclude Include="Src\Shader.h" />
     <ClInclude Include="Src\Texture.h" />
     <ClInclude Include="Src\UniformBuffer.h" />

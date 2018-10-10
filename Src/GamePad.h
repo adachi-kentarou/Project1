@@ -25,6 +25,11 @@ struct GamePad
 	};
 	uint32_t buttons = 0; ///< 押されているあいだフラグが立つ.
 	uint32_t buttonDown = 0; ///< 押された瞬間だけフラグが立つ.
+
+	double posX;
+	double posY;
+	double mouseWheel;
+	bool mouseClick;
 };
 
 #endif

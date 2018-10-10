@@ -26,6 +26,9 @@ namespace GLFWEW {
 		const GamePad& GetGamePad() const;
 		void UpdateGamePad();
 
+		double GetMouseWheel() { return mouseWheel; }
+
+		
 	private:
 		Window();
 		~Window();
@@ -38,6 +41,7 @@ namespace GLFWEW {
 
 		GamePad gamepad;
 
+		double mouseWheel;
 	};
 
 

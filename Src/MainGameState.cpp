@@ -5,9 +5,12 @@
 #include "GameEngine.h"
 #include "../Res/Audio/SampleCueSheet.h"
 #include <algorithm>
+#include <GLFW/glfw3.h>
+#include "Constants.h"
+#include "Charactor.h"
+#include "LoadState.h"
 
 namespace GameState {
-
 	//<- ここにMain.cppから以下の変数、構造体、関数をカット&ペーストしてください.
 	//<-   collisionDataList変数
 	/// 衝突形状リスト.
@@ -18,56 +21,36 @@ namespace GameState {
 		{ glm::vec3(-0.25f, -0.25f, -0.25f), glm::vec3(0.25f, 0.25f, 0.25f) },
 	};
 
+	std::vector<Char::Charactor*> MainGame::MoveCharList;
+	std::vector<Char::Charactor*> MainGame::AttackCharList;
+	int MainGame::time = 0;
+	int MainGame::timev = -1;
+	int MainGame::timecount = STAGE_TIME;
+	int MainGame::sec = 0;
+	int MainGame::gamemode = 0;
+	int MainGame::stageno = 1;
+
 	//<-   UpdateToroid構造体
 	/**
 	* 敵の円盤の状態を更新する.
 	*/
 	struct UpdateToroid
 	{
-		//explicit UpdateToroid(const Entity::BufferPtr& buffer) : entityBuffer(buffer) {}
-
 		void operator()(Entity::Entity& entity, double delta)
 		{
 			// 範囲外に出たら削除する.
 			const glm::vec3 pos = entity.Position();
 			if (std::abs(pos.x) > 40.0f || std::abs(pos.z) > 40.0f) {
-				//entityBuffer->RemoveEntity(&entity);
 				GameEngine::Instance().RemoveEntity(&entity);
 				return;
 			}
-
-			// 円盤を回転させる.
-			float rot = glm::angle(entity.Rotation());
-			//rot += glm::radians(15.0f) * static_cast<float>(delta);
-			rot += glm::radians(60.0f) * static_cast<float>(delta);
-			if (rot > glm::pi<float>() * 2.0f) {
-				rot -= glm::pi<float>() * 2.0f;
-			}
-			entity.Rotation(glm::angleAxis(rot, glm::vec3(0, 1, 0)));
-
-			// 頂点シェーダーのパラメータをUBOにコピーする.
-			//VertexData data;
-			/*
-			InterfaceBlock::VertexData data;
-			data.matModel = entity.CalcModelMatrix();
-			data.matNormal = glm::mat4_cast(entity.Rotation());
-			data.matMVP = matProj * matView * data.matModel;
-			data.color = entity.Color();
-			//memcpy(ubo, &data, sizeof(VertexData));
-			memcpy(ubo, &data, sizeof(InterfaceBlock::VertexData));
-			*/
-
 		}
 
-		//Entity::BufferPtr entityBuffer;
 	};
 
 	//<-   UpdatePlayerShot構造体
 	/**
 	* 自機の弾の更新.
-	*/
-	/*
-	
 	*/
 	struct UpdatePlayerShot
 	{
@@ -106,101 +89,21 @@ namespace GameState {
 			const glm::vec4 col1 = color[static_cast<int>(variation) + 1];
 			const glm::vec4 newColor = glm::mix(col0, col1, std::fmod(variation, 1));
 			entity.Color(newColor);
-			// Y軸回転させる.
-			glm::vec3 euler = glm::eulerAngles(entity.Rotation());
-			euler.y += glm::radians(60.0f) * static_cast<float>(delta);
-			entity.Rotation(glm::quat(euler));
 		}
 
 		double timer = 0;
 	};
 
-	//<-   UpdatePlayer構造体
-	/**
-	* 自機の更新.
-	*/
-	struct UpdatePlayer
-	{
-		void operator()(Entity::Entity& entity, double delta)
-		{
-			GameEngine& game = GameEngine::Instance();
-			const GamePad gamepad = game.GetGamePad();
-			glm::vec3 vec;
-			float rotZ = 0;
-			if (gamepad.buttons & GamePad::DPAD_LEFT) {
-				vec.x = 1;
-				rotZ = -glm::radians(30.0f);
-			}
-			else if (gamepad.buttons & GamePad::DPAD_RIGHT) {
-				vec.x = -1;
-				rotZ = glm::radians(30.0f);
-			}
-			if (gamepad.buttons & GamePad::DPAD_UP) {
-				vec.z = 1;
-			}
-			else if (gamepad.buttons & GamePad::DPAD_DOWN) {
-				vec.z = -1;
-			}
-			if (vec.x || vec.z) {
-				vec = glm::normalize(vec) * 15.0f;
-			}
-			entity.Velocity(vec);
-			entity.Rotation(glm::quat(glm::vec3(0, 0, rotZ)));
-			glm::vec3 pos = entity.Position();
-			pos = glm::min(glm::vec3(11, 100, 20), glm::max(pos, glm::vec3(-11, -100, 1)));
-			entity.Position(pos);
-			/*
-			InterfaceBlock::VertexData data;
-			data.matModel = entity.CalcModelMatrix();
-			data.matNormal = glm::mat4_cast(entity.Rotation());
-			data.matMVP = matProj * matView * data.matModel;
-			data.color = entity.Color();
-			memcpy(ubo, &data, sizeof(InterfaceBlock::VertexData));
-			*/
-
-			if (gamepad.buttons & GamePad::A) {
-				shotInterval -= delta;
-				if (shotInterval <= 0) {
-					glm::vec3 pos = entity.Position();
-					pos.x -= 0.3f; // 自機の中心から左に0.3ずらした位置が1つめの発射点.
-					for (int i = 0; i < 2; ++i) {
-						if (Entity::Entity* p = game.AddEntity(EntityGroupId_PlayerShot, pos,
-							"NormalShot", "Res/Player.bmp", UpdatePlayerShot())) {
-							p->Velocity(glm::vec3(0, 0, 80));
-							p->Collision(collisionDataList[EntityGroupId_PlayerShot]);
-
-						}
-						pos.x += 0.6f; // 中心からに右に0.3ずらした位置が2つめの発射点.
-
-					}
-					shotInterval += 0.25; // 秒間4連射.
-					game.PlayAudio(AudioPlayerId_Shot, CRI_SAMPLECUESHEET_PLAYERSHOT);
-				}
-
-			}
-			else {
-				shotInterval = 0;
-
-			}
-
-		}
-
-	private:
-		double shotInterval = 0;
-	};
-
-	//<-   PlayerShotAndEnemyCollisionHandler関数
 	/**
 	* 自機の弾と敵の衝突処理.
 	*/
 	void PlayerShotAndEnemyCollisionHandler(Entity::Entity& lhs, Entity::Entity& rhs)
 	{
 		GameEngine& game = GameEngine::Instance();
-		if (Entity::Entity* p = game.AddEntity(EntityGroupId_Others, rhs.Position(),
+		if (Entity::Entity* p = game.AddEntity(EntityGroupId_Cube, rhs.Position(),
 			"Blast", "Res/Toroid.bmp", UpdateBlast())) {
 			const std::uniform_real_distribution<float> rotRange(0.0f, glm::pi<float>() * 2);
-			p->Rotation(glm::quat(glm::vec3(0, rotRange(game.Rand()), 0)));
-
+			
 			game.Variable("score") += 100;
 		}
 
@@ -213,16 +116,10 @@ namespace GameState {
 	/**
 	* メインゲーム画面のコンストラクタ.
 	*/
-	MainGame::MainGame(Entity::Entity* p) : pSpaceSphere(p)
+	//MainGame::MainGame(Entity::Entity* p) : pSpaceSphere(p)
+	MainGame::MainGame()
 	{
 		GameEngine& game = GameEngine::Instance();
-		//<--- ここにMain.cppのmain関数にあるGameEngine::CollisionHandler関数呼び出しコードと
-		//     Update構造体のコンストラクタにある得点を初期化しているコードをカット&ペーストしてください --->
-		game.CollisionHandler(EntityGroupId_PlayerShot, EntityGroupId_Enemy,
-			&PlayerShotAndEnemyCollisionHandler);
-
-		
-		
 
 	}
 
@@ -233,41 +130,254 @@ namespace GameState {
 	{
 		//<- ここにMain.cppのUpdate::operator()の内容をカット&ペーストしてください. 
 		GameEngine& game = GameEngine::Instance();
+		const GamePad gamepad = game.GetGamePad();
 
 		if (!isInitialized) {
-			isInitialized = true;
-			game.Camera({ { 0, 20, -8 },{ 0, 0, 12 },{ 0, 0, 1 } });
-			game.AmbientLight(glm::vec4(0.05f, 0.1f, 0.2f, 1));
+			isInitialized = true; 
+
+			char str[16];
+			snprintf(str, 16, "STAGE %d", stageno);
+			game.FontColor(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+			game.FontScale(glm::vec2(3.0f, 3.0f));
+			game.AddString(glm::vec2(260.0f, 130.0f), str);
+			
+
+			game.AmbientLight(glm::vec4(0.4f, 0.4f, 0.4f, 1));
 			game.Light(0, { { 40, 100, 10, 1 },{ 12000, 12000, 12000, 1 } });
-			pPlayer = game.AddEntity(EntityGroupId_Player, glm::vec3(0, 0, 2),
-				"Aircraft", "Res/Player.bmp", UpdatePlayer());
-			pPlayer->Collision(collisionDataList[EntityGroupId_Player]);
 
 			game.PlayAudio(AudioPlayerId_BGM, CRI_SAMPLECUESHEET_BGM02);
 		}
-
-		std::uniform_int_distribution<> posXRange(-15, 15);
-		std::uniform_int_distribution<> posZRange(38, 40);
-		interval -= delta;
+		
 		if (interval <= 0) {
-			std::uniform_int_distribution<> rndAddingCount(1, 5);
-			for (int i = rndAddingCount(game.Rand()); i > 0; --i) {
-				const glm::vec3 pos(posXRange(game.Rand()), 0, posZRange(game.Rand()));
-				if (Entity::Entity* p = game.AddEntity(
-					EntityGroupId_Enemy, pos, "Toroid", "Res/Toroid.bmp", UpdateToroid())) {
-					p->Velocity({ pos.x < 0 ? 3.0f : -3.0f, 0, -12.0f });
-					p->Collision(collisionDataList[EntityGroupId_Enemy]);
+			
+
+			Char::Charactor* c;
+			Char::MapPoint p;
+			Char::Item* it;
+
+			//プレイヤー配置
+			if (player != nullptr) { delete player; }
+			player = game.CreatePlayerChara();
+			p = player->GetMapPosition();
+			player->SetMapPosition(p.x, p.y, p.z);
+			GameEngine::world->addNode(player);
+
+			//敵配置
+			for (int i = 0; i < STAGE_ENEMY + STAGE_ENEMY_UP * GameState::MainGame::stageno;i++) {
+				c = game.CreateEnemyChara();
+				p = c->GetMapPosition();
+				c->SetMapPosition(p.x, p.y, p.z);
+				GameEngine::world->addNode(c);
+			}
+
+			//アイテム配置
+			for (int i = 0; i < STAGE_ITEM + STAGE_ITEM_UP * GameState::MainGame::stageno; i++) {
+				it = game.CreateItemChara();
+				p = it->GetMapPosition();
+				it->SetMapPosition(p.x, p.y, p.z);
+				GameEngine::world->addNode(it);
+			}
+			
+			interval = 1;
+		}
+
+		char str[16];
+
+		//視点座標
+		glm::vec3 pos = game.Camera().position;
+
+		//計算
+		double window_half_width = WINDOW_WIDTH / 2;
+		double window_half_height = WINDOW_HEIGHT / 2;
+
+		double posX = gamepad.posX - window_half_width;
+		double posY = gamepad.posY - window_half_height;
+		
+		//角度補正値
+		double hosei = 0;
+		
+		//X軸角度計算
+		double radian = glm::radians(-LOOK_RADIAN * (posY / window_half_height) + hosei);
+		//X軸ターゲットY座標
+		double XtargetY = std::sin(radian) * 8;
+		//X軸ターゲットX座標
+		double XtargetX = std::cos(radian) * 8;
+
+		//Y軸角度計算
+		radian = (-LOOK_RADIAN * (posX / window_half_width) + player->Rotation().y) * (std::_Pi / 180);
+		//Y軸ターゲットY座標
+		double YtargetY = std::sin(radian) * XtargetX;
+		//Y軸ターゲットX座標
+		double YtargetX = std::cos(radian) * XtargetX;
+		
+		//カメラアングル変更
+		if (gamepad.mouseWheel != 0) {
+			if (gamepad.mouseWheel == 1 ) {
+				if (MAX_CAMERA_ANGLE > game.zoom) {
+					game.zoom += 2;
 				}
 			}
-			std::normal_distribution<> intervalRange(2.0, 0.5);
-			interval += glm::clamp(intervalRange(game.Rand()), 0.5, 3.0);
+			else {
+				if (MIN_CAMERA_ANGLE < game.zoom) {
+					game.zoom -= 2;
+				}
+			}
 		}
 		
-		char str[16];
-		snprintf(str, 16, "%08.0f", game.Variable("score"));
-		game.FontScale(glm::vec2(1.0f, 1.0f));
+
+		game.Camera({ pos - glm::vec3(YtargetY,XtargetY,YtargetX),pos + glm::vec3(YtargetY,XtargetY,YtargetX),{ 0, 1, 0 } });
+		
 		game.FontColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-		game.AddString(glm::vec2(320.0f, 8.0f), str);
+
+		snprintf(str, 16, "mousex:%01.0f", gamepad.posX);
+		game.FontScale(glm::vec2(0.5f, 0.5f));
+		game.AddString(glm::vec2(10.0f, 10.0f), str);
+
+		snprintf(str, 16, "mousey:%01.0f", gamepad.posY);
+		game.AddString(glm::vec2(10.0f, 30.0f), str);
+
+		snprintf(str, 16, "zoom:%01.0f", game.zoom);
+		game.AddString(glm::vec2(10.0f, 50.0f), str);
+
+		snprintf(str, 16, "pos:x%d y%d z%d", player->pos.x, player->pos.y, player->pos.z);
+		game.AddString(glm::vec2(10.0f, 70.0f), str);
+		
+		snprintf(str, 16, "charactor:%d", Char::Charactor::CharList.size());
+		game.AddString(glm::vec2(10.0f, 90.0f), str);
+		/*
+		snprintf(str, 16, "x:%f", Char::Charactor::Player->Position().x);
+		game.AddString(glm::vec2(10.0f, 110.0f), str);
+		snprintf(str, 16, "y:%f", Char::Charactor::Player->Position().y);
+		game.AddString(glm::vec2(10.0f, 130.0f), str);
+		snprintf(str, 16, "z:%f", Char::Charactor::Player->Position().z);
+		game.AddString(glm::vec2(10.0f, 150.0f), str);
+		*/
+		
+		//ステージ表示
+		snprintf(str, 16, "STAGE:%d", GameState::MainGame::stageno);
+		game.FontScale(glm::vec2(1.0f, 1.0f));
+		game.AddString(glm::vec2(600.0f, 8.0f), str);
+
+
+		//HP表示
+		if (Char::Charactor::Player->Hp() < 6) {
+			game.FontColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+		}
+		snprintf(str, 16, "HP:%d", Char::Charactor::Player->Hp());
+		game.FontScale(glm::vec2(1.0f, 1.0f));
+		game.AddString(glm::vec2(400.0f, 8.0f), str);
+		game.FontColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+		//ゲーム終了条件
+
+		//時間加算
+		if (++sec == 60) {
+			timecount += timev;
+			sec = 0;
+		}
+		if (timecount < 31) {
+			game.FontColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+		}
+		snprintf(str, 16, "TIME:%d", timecount);
+		
+		game.FontScale(glm::vec2(1.0f, 1.0f));
+		game.AddString(glm::vec2(200.0f, 8.0f), str);
+		game.FontColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+		//ゲームオーバー
+		if (Char::Charactor::Player->Hp() == 0) {
+			if (time == 0) {
+				GameState::MainGame::gamemode = 4;
+				time = 180;
+				timev = 0;
+				game.PlayAudio(AudioPlayerId_UI, CRI_SAMPLECUESHEET_START);
+			}
+			else {
+				game.FontColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+				game.FontScale(glm::vec2(3.0f, 3.0f));
+				game.AddString(glm::vec2(130.0f, 260.0f), "GAME OVER");
+
+				time--;
+				if (time == 0) {
+					game.StopAudio(GameState::AudioPlayerId::AudioPlayerId_BGM);
+					game.reset = true;
+					timecount = 100;
+					timev = -1;
+					sec = 0;
+					AttackCharList.clear();
+					game.UpdateFunc(GameState::Title());
+				}
+			}
+			return;
+		}
+
+		//タイムアップ
+		if (timecount == 0) {
+			if (time == 0) {
+				GameState::MainGame::gamemode = 4;
+				time = 180;
+				timev = 0;
+				game.PlayAudio(AudioPlayerId_UI, CRI_SAMPLECUESHEET_START);
+			}
+			else {
+				game.FontColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+				game.FontScale(glm::vec2(3.0f, 3.0f));
+				game.AddString(glm::vec2(130.0f, 260.0f), "TIME UP");
+				
+				time--;
+				if (time == 0) {
+					game.StopAudio(GameState::AudioPlayerId::AudioPlayerId_BGM);
+					game.reset = true;
+					timecount = 100;
+					timev = -1;
+					sec = 0;
+					AttackCharList.clear();
+					game.UpdateFunc(GameState::Title());
+				}
+			}
+			return;
+		}
+
+		//ゲームクリア
+		if (Char::Charactor::CharList.size() == 1 && timecount != 0) {
+			if (time == 0) {
+				GameState::MainGame::gamemode = 4;
+				time = 180;
+				timev = 0;
+				game.PlayAudio(AudioPlayerId_UI, CRI_SAMPLECUESHEET_START);
+			}
+			else {
+				game.FontColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+				game.FontScale(glm::vec2(3.0f, 3.0f));
+				if (stageno < STAGE_NO) {
+					game.FontColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+					game.AddString(glm::vec2(130.0f, 260.0f), "STAGE CLEAR");
+				}
+				else {
+					game.FontColor(glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
+					game.AddString(glm::vec2(130.0f, 260.0f), "GAME CLEAR");
+				}
+				
+				time--;
+				if (time == 0) {
+					game.StopAudio(GameState::AudioPlayerId::AudioPlayerId_BGM);
+					game.reset = true;
+					timecount = 100;
+					sec = 0;
+					AttackCharList.clear();
+					
+					if (stageno < STAGE_NO) {
+						game.UpdateFunc(LoadState::LoadGame());
+					}
+					else {
+						game.UpdateFunc(GameState::Title());
+					}
+					MainGame::stageno++;
+				}
+			}
+			
+			return;
+		}
 	}
 
 }

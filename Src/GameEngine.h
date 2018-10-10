@@ -9,6 +9,10 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Mesh.h"
+#include "GameState.h"
+#include "PlayerCharactor.h"
+#include "EnemyCharactor.h"
+#include "Item.h"
 #include "Entity.h"
 #include "InterfaceBlock.h"
 #include "GamePad.h"
@@ -33,15 +37,19 @@ public:
 		glm::vec3 up;
 	};
 
+	float zoom = 45;
+
+	static Node* world;
+
 	static GameEngine& Instance();
 	bool Init(int w, int h, const char* title);
 	void Run();
 	void UpdateFunc(const UpdateFuncType& func);
 	const UpdateFuncType& UpdateFunc() const;
 
-	bool LoadTextureFromFile(const char* filename);
+	bool LoadTextureFromFile(const char* filename,const int c = -1, const int v = 0);
 	const TexturePtr& GetTexture(const char* filename) const;
-	bool LoadMeshFromFile(const char* filename);
+	//bool LoadMeshFromFile(const char* filename);
 	Entity::Entity* AddEntity(int groupId, const glm::vec3& pos, const char* meshName,
 		const char* texName, Entity::Entity::UpdateFuncType func,
 		const char* shader = nullptr);
@@ -76,6 +84,14 @@ public:
 	void FontColor(const glm::vec4& color) { fontRenderer.Color(color); }
 
 	double& Variable(const char* name) { return variables[name]; }
+
+	Char::Charactor* CreatePlayerChara();
+	Char::Charactor* CreateEnemyChara();
+	Char::Item* GameEngine::CreateItemChara();
+
+	void DestroyAllEntity();
+
+	bool reset = false;
 
 private:
 	GameEngine() = default;
@@ -112,7 +128,8 @@ private:
 	std::mt19937 rand;
 
 	std::unordered_map<std::string, double> variables;
-
+	
+	
 };
 
 #endif

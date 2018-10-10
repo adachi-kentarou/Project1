@@ -61,7 +61,7 @@ namespace Mesh {
 	public:
 		static BufferPtr Create(int vboSize, int iboSize);
 
-		bool LoadMeshFromFile(const char* filename);
+		//bool LoadMeshFromFile(const char* filename);
 		const MeshPtr& GetMesh(const char* name) const;
 		const Material& GetMaterial(size_t index) const;
 		void BindVAO() const;
@@ -82,5 +82,4 @@ namespace Mesh {
 		std::unordered_map<std::string, MeshPtr> meshList; ///< メッシュリスト.
 	};
 }
-
 #endif

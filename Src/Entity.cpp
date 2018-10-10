@@ -6,12 +6,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <algorithm>
+#include "GameState.h"
+#include "GameEngine.h"
 
 /**
 * エンティティに関するコードを格納する名前空間.
 */
 namespace Entity {
-
 	/**
 	* VertexDataをUBOに転送する.
 	*
@@ -22,25 +23,34 @@ namespace Entity {
 	void UpdateUniformVertexData(Entity& entity, void* ubo, const glm::mat4& matVP)
 	{
 		InterfaceBlock::VertexData data;
-		data.matModel = entity.CalcModelMatrix();
-		data.matNormal = glm::mat4_cast(entity.Rotation());
+		//data.matModel = entity.CalcModelMatrix();
+		//data.matModel = entity.mymatrix;
+		data.matModel = entity.GetMatrix();
+		//entity.mymatrix = data.matModel;
+		//data.matNormal = glm::mat4_cast(entity.Rotation());
+		data.matNormal = entity.GetRotation();
 		data.matMVP = matVP * data.matModel;
-		data.color = entity.Color();
+		data.color = entity.GetColor();
 		memcpy(ubo, &data, sizeof(data));
 	}
-
+	
 	/**
 	* 移動・回転・拡縮行列を取得する.
 	*
 	* @return TRS行列.
 	*/
+	/*
 	glm::mat4 Entity::CalcModelMatrix() const
 	{
 		const glm::mat4 t = glm::translate(glm::mat4(), position);
-		const glm::mat4 r = glm::mat4_cast(rotation);
+		//const glm::mat4 r = glm::mat4_cast(rotation);
+		const glm::mat4 r = glrotate;
 		const glm::mat4 s = glm::scale(glm::mat4(), scale);
+		
 		return t * r * s;
 	}
+	*/
+	
 
 	/**
 	* エンティティを破棄する.
@@ -141,7 +151,7 @@ namespace Entity {
 	*         このポインタをアプリケーション側で保持する必要はない.
 	*/
 	Entity* Buffer::AddEntity(int groupId, const glm::vec3& position,
-		const Mesh::MeshPtr& mesh, const TexturePtr& texture,
+		const TexturePtr& texture,
 		const Shader::ProgramPtr& program, Entity::UpdateFuncType func)
 	{
 		if (freeList.prev == freeList.next) {
@@ -149,7 +159,7 @@ namespace Entity {
 				"空きエンティティがありません." << std::endl;
 			return nullptr;
 		}
-
+		
 		if (groupId < 0 || groupId > maxGroupId) {
 			std::cerr << "ERROR in Entity::Buffer::AddEntity: 範囲外のグループID(" << groupId <<
 				")が渡されました.\nグループIDは0～" << maxGroupId << "でなければなりません." <<
@@ -165,14 +175,15 @@ namespace Entity {
 
 		entity->position = position;
 		entity->scale = glm::vec3(1, 1, 1);
-		entity->rotation = glm::quat();
+		entity->rotation = glm::vec3(0, 0, 0);
 		entity->color = glm::vec4(1, 1, 1, 1);
 		entity->velocity = glm::vec3();
-		entity->mesh = mesh;
+		//entity->mesh = mesh;
 		entity->texture = texture;
 		entity->program = program;
 		entity->updateFunc = func;
 		entity->isActive = true;
+
 		return entity;
 	}
 
@@ -204,11 +215,16 @@ namespace Entity {
 		}
 
 		freeList.Insert(p);
-		p->mesh.reset();
+		//p->mesh.reset();
 		p->texture.reset();
 		p->program.reset();
 		p->updateFunc = nullptr;
 		p->isActive = false;
+
+		if (entity->parentnode != nullptr) {
+			entity->removeNode();
+		}
+		
 	}
 
 	/**
@@ -237,7 +253,7 @@ namespace Entity {
 			for (itrUpdate = activeList[groupId].next; itrUpdate != &activeList[groupId];
 				itrUpdate = itrUpdate->next) {
 				LinkEntity& e = *static_cast<LinkEntity*>(itrUpdate);
-				e.position += e.velocity * static_cast<float>(delta);
+				//e.position += e.velocity * static_cast<float>(delta);
 				if (e.updateFunc) {
 					e.updateFunc(e, delta);
 				}
@@ -280,6 +296,73 @@ namespace Entity {
 		itrUpdate = nullptr;
 		itrUpdateRhs = nullptr;
 
+		//キャラクター行動決定
+		if (GameState::MainGame::gamemode == 3) {
+			
+			if (GameState::MainGame::AttackCharList.size()) {
+				GameState::MainGame::gamemode = 4;
+				GameState::MainGame::AttackCharList[0]->Attack();
+			}
+			else {
+				
+				if (GameState::MainGame::timecount == 0 ||
+					Char::Charactor::Player->Hp() == 0 ||
+					Char::Charactor::CharList.size() == 1
+					) {
+					//終了待機に変更
+					GameState::MainGame::gamemode = 4;
+				}
+				else {
+					//入力待ちに変更
+					GameState::MainGame::gamemode = 0;
+				}
+			}
+
+		}
+		
+		//キャラクターの状態を更新する
+		for (int itr = 0; Char::Charactor::CharList.begin() + itr < Char::Charactor::CharList.end(); itr++) {
+			auto itrr = Char::Charactor::CharList.begin() + itr;
+			if (static_cast<Char::Charactor*>(*itrr) != nullptr) {
+				static_cast<Char::Charactor*>(*itrr)->Update();
+				if (static_cast<Char::Charactor*>(*itrr)->Destroy()) {
+					//削除
+					Char::Charactor::CharList.erase(itrr);
+					itr--;
+				}
+			}
+			else {
+				//削除
+				Char::Charactor::CharList[itr]->removeNode();
+				Char::Charactor::CharList.erase(itrr);
+				itr--;
+			}
+		}
+
+		//アイテムの状態を更新する
+		for (int itr = 0; Char::Item::ItemList.begin() + itr < Char::Item::ItemList.end(); itr++) {
+			auto itrr = Char::Item::ItemList.begin() + itr;
+			if (static_cast<Char::Item*>(*itrr) != nullptr) {
+				static_cast<Char::Item*>(*itrr)->Update();
+				if (static_cast<Char::Item*>(*itrr)->Destroy()) {
+					//削除
+					Char::Item::ItemList.erase(itrr);
+					itr--;
+				}
+			}
+			else {
+				//削除
+				Char::Item::ItemList[itr]->removeNode();
+				Char::Item::ItemList.erase(itrr);
+				itr--;
+			}
+		}
+
+		//NodeのMatrixを更新する
+		GameEngine::world->Update();
+		
+
+
 		// UBOを更新する.
 		uint8_t* p = static_cast<uint8_t*>(ubo->MapBuffer());
 		const glm::mat4 matVP = matProj * matView;
@@ -287,8 +370,8 @@ namespace Entity {
 			for (itrUpdate = activeList[groupId].next; itrUpdate != &activeList[groupId];
 				itrUpdate = itrUpdate->next) {
 				LinkEntity& e = *static_cast<LinkEntity*>(itrUpdate);
-				UpdateUniformVertexData(e, p + e.uboOffset, matVP);
 				
+				UpdateUniformVertexData(e, p + e.uboOffset, matVP);
 			}
 			
 		}
@@ -296,27 +379,63 @@ namespace Entity {
 	}
 
 	/**
+	* エンティティを削除する.
+	*/
+	void Buffer::DestoroyAllEntity() {
+		/*
+		for (int groupId = 0; groupId <= maxGroupId; ++groupId) {
+			for (itrUpdate = activeList[groupId].next; itrUpdate != &activeList[groupId];
+				itrUpdate = itrUpdate->next) {
+				LinkEntity& e = *static_cast<LinkEntity*>(itrUpdate);
+				//RemoveEntity(&e);
+				GameEngine::Instance().RemoveEntity(&e);
+				//e.Destroy();
+				//e.Remove();
+			}
+
+		}
+		*/
+		
+
+		for (int groupId = 0; groupId <= maxGroupId; ++groupId) {
+			for (itrUpdate = activeList[groupId].next; itrUpdate != &activeList[groupId];
+				itrUpdate = itrUpdate->next) {
+				LinkEntity& e = *static_cast<LinkEntity*>(itrUpdate);
+				//GameEngine::Instance().RemoveEntity(&e);
+				e.Destroy();
+				
+			}
+		}
+		//freeList = Link();
+	}
+	/**
 	* アクティブなエンティティを描画する.
 	*
 	* @param meshBuffer 描画に使用するメッシュバッファへのポインタ.
 	*/
-	void Buffer::Draw(const Mesh::BufferPtr& meshBuffer) const
+	void Buffer::Draw() const
 	{
-		meshBuffer->BindVAO();
 		for (int groupId = 0; groupId <= maxGroupId; ++groupId) {
 			for (const Link* itr = activeList[groupId].next; itr != &activeList[groupId];
 				itr = itr->next) {
 				const LinkEntity& e = *static_cast<const LinkEntity*>(itr);
-				if (e.mesh && e.texture && e.program) {
+
+				if (e.texture && e.program && e.combinedvisible) {
 					e.program->UseProgram();
 					e.program->BindTexture(GL_TEXTURE0, GL_TEXTURE_2D, e.texture->Id());
+
+
 					ubo->BindBufferRange(e.uboOffset, ubSizePerEntity);
-					e.mesh->Draw(meshBuffer);
+					
+					glDrawElements(GL_TRIANGLES, renderingParts[e.groupId].size, GL_UNSIGNED_INT, renderingParts[e.groupId].offset);
+
 				}
+
 			}
-			
+
 		}
 	}
+	
 
 	/**
 	* 衝突解決ハンドラを設定する.
@@ -380,6 +499,6 @@ namespace Entity {
 		collisionHandlerList.clear();
 	}
 
-
+	
 }
 

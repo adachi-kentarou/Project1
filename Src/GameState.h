@@ -4,18 +4,20 @@
 #ifndef GAMESTATE_H_INCLUDED
 #define GAMESTATE_H_INCLUDED
 #include "Entity.h"
+#include "Constants.h"
+#include "Charactor.h"
+#include "LoadState.h"
 
 namespace GameState {
-
 	/// エンティティの衝突グループID.
 	enum EntityGroupId
 	{
-		EntityGroupId_Background,
-		EntityGroupId_Player,
-		EntityGroupId_PlayerShot,
-		EntityGroupId_Enemy,
-		EntityGroupId_EnemyShot,
-		EntityGroupId_Others
+		EntityGroupId_Display,
+		EntityGroupId_Cube,
+		EntityGroupId_Tile,
+		EntityGroupId_Stair1,
+		EntityGroupId_Stair2,
+		EntityGroupId_Image,
 	};
 
 	/// 音声プレイヤーのID.
@@ -48,14 +50,34 @@ namespace GameState {
 	class MainGame
 	{
 	public:
-		explicit MainGame(Entity::Entity* p);
+		explicit MainGame();
 		void operator()(double delta);
+		
+		static int time;
+		static int timev;
+		static int timecount;
+		static int sec;
+		static int stageno;
+		//ゲームモード　0入力待ち　1移動処理　2攻撃処理　3敵攻撃開始　4攻撃終了待機
+		static int gamemode;
+		//移動キャラリスト
+		static std::vector<Char::Charactor*> MoveCharList;
+		//攻撃キャラリスト
+		static std::vector<Char::Charactor*> AttackCharList;
+
 	private:
 		bool isInitialized = false;
 		double interval = 0;
 		Entity::Entity* pPlayer = nullptr;
 		Entity::Entity* pSpaceSphere = nullptr;
+
+		Entity::Entity* test;
+		Char::Charactor* player = nullptr;
+
+		bool enemyaction = false;
+
 	};
+
 
 }
 

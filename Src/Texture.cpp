@@ -86,8 +86,19 @@ TexturePtr Texture::Create(
 * @return 作成に成功した場合はテクスチャポインタを返す.
 *         失敗した場合はnullptr返す.
 */
-TexturePtr Texture::LoadFromFile(const char* filename)
+TexturePtr Texture::LoadFromFile(const char* filename, const int c, const int v)
 {
+	//ファイル名が空なら空テクスチャーを返す
+	if (filename == "") {
+		uint32_t textureData[] = { 
+			0xffffffff,0xffffffff,
+			0xffffffff,0xffffffff
+		};
+		return Texture::Create(2, 2, GL_RGBA8, GL_RGBA, textureData);
+		//struct Impl : Texture {};
+		//return std::make_shared<Impl>();
+	}
+
 	//ファイルサイズを取得する.
 	struct stat st;
 	if (stat(filename, &st)) {
@@ -147,5 +158,29 @@ TexturePtr Texture::LoadFromFile(const char* filename)
 		
 	}
 
+	//指定色の閾値範囲内のアルファを0にする
+	if (c != -1) {
+		for (auto itr = buf.begin() + offsetBytes; itr != buf.end();itr++) {
+			//画像のRGB
+			int b = *itr >> 8 & 0xff;
+			int g = *itr >> 16 & 0xff;
+			int r = *itr >> 24 & 0xff;
+
+			//閾値のRGB
+			int cb = c & 0xff;
+			int cg = c >> 8 & 0xff;
+			int cr = c >> 16 & 0xff;
+
+			if (!(cr - v <= r && cr + v >= r &&
+				cg - v <= g && cg + v >= g &&
+				cb - v <= b && cb + v >= b
+				)) {
+				//画像が閾値以内であればアルファ0に変更
+				*itr &= 0x0000ffff;
+			}
+		}
+	}
+	
+	
 	return Create(width, height, GL_RGB8, GL_BGR, buf.data() + offsetBytes);
 }

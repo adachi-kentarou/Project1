@@ -4,15 +4,21 @@
 #include "GLFWEW.h"
 #include <iostream>
 
+
 /// GLFWとGLEWをラップするための名前空間.
 namespace GLFWEW {
-
 
 	void ErrorCallback(int error, const char* desc)
 	{
 		std::cerr << "ERROR: " << desc << std::endl;
 	};
 
+	double wheelflg = 0;
+	void wheel(GLFWwindow *const window, double x, double y)
+	{
+		wheelflg = y;
+		
+	}
 	/**
 	* シングルトンインスタンスを取得する.
 	*
@@ -40,6 +46,7 @@ namespace GLFWEW {
 			glfwTerminate();
 		}
 	}
+
 
 	/**
 	* GLFW/GLEWの初期化.
@@ -83,6 +90,9 @@ namespace GLFWEW {
 		const GLubyte* version = glGetString(GL_VERSION);
 		std::cout << "Version: " << version << std::endl;
 		isInitialized = true;
+		
+		//マウスホイールコールバック追加
+		glfwSetScrollCallback(window, wheel);
 		return true;
 	}
 
@@ -212,9 +222,13 @@ namespace GLFWEW {
 				{ GLFW_KEY_DOWN, GamePad::DPAD_DOWN },
 				{ GLFW_KEY_LEFT, GamePad::DPAD_LEFT },
 				{ GLFW_KEY_RIGHT, GamePad::DPAD_RIGHT },
+				{ GLFW_KEY_W, GamePad::DPAD_UP },
+				{ GLFW_KEY_S, GamePad::DPAD_DOWN },
+				{ GLFW_KEY_A, GamePad::DPAD_LEFT },
+				{ GLFW_KEY_D, GamePad::DPAD_RIGHT },
 				{ GLFW_KEY_ENTER, GamePad::START },
-				{ GLFW_KEY_A, GamePad::A },
-				{ GLFW_KEY_S, GamePad::B },
+				{ GLFW_KEY_Q, GamePad::A },
+				{ GLFW_KEY_E, GamePad::B },
 				{ GLFW_KEY_Z, GamePad::X },
 				{ GLFW_KEY_X, GamePad::Y },
 			};
@@ -229,6 +243,19 @@ namespace GLFWEW {
 			}
 		}
 		gamepad.buttonDown = gamepad.buttons & ~prevButtons;
+
+		//マウス情報
+		glfwGetCursorPos(window,&gamepad.posX, &gamepad.posY);
+		
+		//マウスホイール
+		gamepad.mouseWheel = GLFWEW::wheelflg;
+		gamepad.mouseClick = 10;
+
+		//マウスクリック
+		gamepad.mouseClick = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+		
+		GLFWEW::wheelflg = 0;
+		
 	}
 
 } // namespace GLFWEW

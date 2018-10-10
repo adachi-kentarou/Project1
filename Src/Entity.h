@@ -4,7 +4,7 @@
 #ifndef ENTITY_H_INCLUDED
 #define ENTITY_H_INCLUDED
 #include <GL/glew.h>
-#include "Mesh.h"
+//#include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "UniformBuffer.h"
@@ -13,6 +13,197 @@
 #include <memory>
 #include <functional>
 #include <vector>
+#include "Node.h"
+
+
+
+
+
+/// 頂点データ型.
+struct Vertex
+{
+	glm::vec3 position; ///< 座標.
+	glm::vec4 color; ///< 色.
+	glm::vec2 texCoord; ///< テクスチャ座標.
+	glm::vec3 normal; ///< 法線.
+};
+
+const Vertex vertices[] = {
+	{ { -0.5f, -0.3f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
+{ { 0.3f, -0.3f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
+{ { 0.3f,  0.5f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 1.0f, 0.0f, 0.0f } },
+{ { -0.5f,  0.5f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f } },
+
+{ { -0.3f,  0.3f, 0.1f },{ 0.0f, 0.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
+{ { -0.3f, -0.5f, 0.1f },{ 0.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f } },
+{ { 0.5f, -0.5f, 0.1f },{ 0.0f, 0.0f, 1.0f, 1.0f },{ 1.0f, 0.0f } },
+{ { 0.5f, -0.5f, 0.1f },{ 1.0f, 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f } },
+{ { 0.5f,  0.3f, 0.1f },{ 1.0f, 1.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
+{ { -0.3f,  0.3f, 0.1f },{ 1.0f, 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f } },
+
+{ { -1.0f,-1.0f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f } },
+{ { 1.0f,-1.0f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f } },
+{ { 1.0f, 1.0f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f } },
+{ { -1.0f, 1.0f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
+
+//ここからキューブデータ
+//下面
+{ { -1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f, -1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.0f, -1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+//上面
+{ { -1.0f,1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
+{ { 1.0f,1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
+{ { 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, 1.0f, 0.0f } },
+{ { -1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f } },
+//前面
+{ { -1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+{ { 1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+{ { 1.0f, 1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+{ { -1.0f, 1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+//後面
+{ { -1.0f,-1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, 0.0f, -1.0f } },
+{ { 1.0f,-1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, 0.0f, -1.0f } },
+{ { 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, 0.0f, -1.0f } },
+{ { -1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, 0.0f, -1.0f } },
+//右面
+{ { 1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
+{ { 1.0f,-1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
+{ { 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 1.0f, 0.0f, 0.0f } },
+{ { 1.0f, 1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f } },
+//左面
+{ { -1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ -1.0f, 0.0f, 0.0f } },
+{ { -1.0f,-1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ -1.0f, 0.0f, 0.0f } },
+{ { -1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ -1.0f, 0.0f, 0.0f } },
+{ { -1.0f, 1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ -1.0f, 0.0f, 0.0f } },
+//階段直進
+{ { -1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f, -1.0f, -0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.0f, -1.0f, -0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+
+{ { -1.0f,-0.6f, -0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f,-0.6f, -0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f, -0.6f, -0.2f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.0f, -0.6f, -0.2f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+
+{ { -1.0f,-0.2f, -0.2f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f,-0.2f, -0.2f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f, -0.2f, 0.2f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.0f, -0.2f, 0.2f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+
+{ { -1.0f,0.2f, 0.2f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f,0.2f, 0.2f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f, 0.2f, 0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.0f, 0.2f, 0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+
+{ { -1.0f,0.6f, 0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f,0.6f, 0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f, 0.6f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.0f, 0.6f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+//階段曲進
+{ { -1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f,-1.0f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 1.0f, -1.0f, -0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.0f, -1.0f, -0.6f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+
+{ { -0.908239f,-0.6f, -1.061313f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 0.939520f,-0.6f, -0.295946f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 0.786446f, -0.6f, 0.073606f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.061313f, -0.6f, -0.691761f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+
+{ { -0.800000f,-0.2f, -1.082843f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 0.614213f,-0.2f, 0.331371f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 0.331371f, -0.2f, 0.614213f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.082843f, -0.2f, -0.800000f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+
+{ { -0.691761f,0.2f, -1.061313f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { 0.073606f,0.2f, 0.786446f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -0.295946f, 0.2f, 0.939520f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.061313f, 0.2f, -0.908239f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+
+{ { -0.6f,0.6f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -0.6f,0.6f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.0f, 0.6f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+{ { -1.0f, 0.6f, -1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, -1.0f, 0.0f } },
+
+//アイテム
+{ { -1.0f,-1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+{ { 1.0f,-1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+{ { 1.0f, 1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+{ { -1.0f, 1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+
+};
+
+
+/// インデックスデータ.
+const GLuint indices[] = {
+	0, 1, 2, 2, 3, 0,
+	4, 5, 6, 7, 8, 9,
+	10, 11, 12, 12, 13, 10,
+	14, 15, 16, 16, 17, 14,
+	18, 19, 20, 20, 21, 18,
+	22, 23, 24, 24, 25, 22,
+	26, 27, 28, 28, 29, 26,
+	30, 31, 32, 32, 33, 30,
+	34, 35, 36, 36, 37, 34,
+	38, 39, 40, 40, 41, 38,
+
+	42, 43, 44, 44, 45, 42,
+	46, 47, 48, 48, 49, 46,
+	50, 51, 52, 52, 53, 50,
+	54, 55, 56, 56, 57, 54,
+	58, 59, 60, 60, 61, 58,
+
+	62, 63, 64, 64, 65, 62,
+	66, 67, 68, 68, 69, 66,
+	70, 71, 72, 72, 73, 70,
+	74, 75, 76, 76, 77, 74,
+	78, 79, 80, 80, 81, 78,
+
+	82, 83, 84, 84, 85, 82,
+};
+
+/**
+* 部分描画データ.
+*/
+struct RenderingPart
+{
+	GLvoid* offset; ///< 描画開始インデックスのバイトオフセット.
+	GLsizei size; ///< 描画するインデックス数.
+};
+
+/**
+* RenderingPartを作成する.
+*
+* @param offset 描画開始インデックスのオフセット(インデックス単位).
+* @param size 描画するインデックス数.
+*
+* @return 作成した部分描画オブジェクト.
+*/
+constexpr RenderingPart MakeRenderingPart(GLsizei offset, GLsizei size) {
+	return { reinterpret_cast<GLvoid*>(offset * sizeof(GLuint)), size };
+}
+
+/**
+* 部分描画データリスト.
+*/
+static const RenderingPart renderingParts[] = {
+	//MakeRenderingPart(0, 12),
+	MakeRenderingPart(12, 6),///ディスプレイ
+	MakeRenderingPart(18, 36),///キューブ
+	MakeRenderingPart(18, 6),///タイル
+	MakeRenderingPart(54, 30),///階段直進
+	MakeRenderingPart(84, 30),///階段曲進
+	MakeRenderingPart(114, 6),///アイテム
+};
+
+
+
+
+
+
 
 namespace Entity {
 
@@ -24,6 +215,7 @@ namespace Entity {
 	typedef std::function<void(Entity&, Entity&)> CollisionHandlerType;
 	
 	static const int maxGroupId = 31; ///< グループIDの最大値.
+	
 	
 	/**
 	 * 衝突判定形状.
@@ -37,24 +229,15 @@ namespace Entity {
 	/**
 	* エンティティ.
 	*/
-	class Entity
+	class Entity : public Node
 	{
 		friend class Buffer;
+		//friend class Node;
 
 	public:
 		/// 状態更新関数型.
 		using UpdateFuncType = std::function<void(Entity&, double)>;
-
-		void Position(const glm::vec3& v) { position = v; }
-		const glm::vec3& Position() const { return position; }
-		void Rotation(const glm::quat& q) { rotation = q; }
-		const glm::quat& Rotation() const { return rotation; }
-		void Scale(const glm::vec3& v) { scale = v; }
-		const glm::vec3& Scale() const { return scale; }
-		void Color(const glm::vec4& v) { color = v; }
-		const glm::vec4& Color() const { return color; }
-		void Velocity(const glm::vec3& v) { velocity = v; }
-		const glm::vec3& Velocity() const { return velocity; }
+		
 		void UpdateFunc(const UpdateFuncType& func) { updateFunc = func; }
 		const UpdateFuncType& UpdateFunc() const { return updateFunc; }
 
@@ -63,22 +246,15 @@ namespace Entity {
 		int GroupId() const { return groupId; }
 		void Destroy();
 
-		glm::mat4 CalcModelMatrix() const;
-
 	private:
 		Entity() = default;
 		~Entity() = default;
 		Entity(const Entity&) = default;
 		Entity& operator=(const Entity&) = default;
-
+		
 	private:
-		glm::vec3 position; ///< 座標.
-		glm::vec3 scale = glm::vec3(1, 1, 1); ///< 拡大率.
-		glm::quat rotation; ///< 回転.
-		glm::vec4 color = glm::vec4(1, 1, 1, 1); ///< 色.
-		glm::vec3 velocity; ///< 速度.
 		UpdateFuncType updateFunc; ///< 状態更新関数.
-		Mesh::MeshPtr mesh; ///< エンティティを描画するときに使われるメッシュデータ.
+		//Mesh::MeshPtr mesh; ///< エンティティを描画するときに使われるメッシュデータ.
 		TexturePtr texture; ///< エンティティを描画するときに使われるテクスチャ.
 		Shader::ProgramPtr program; ///< エンティティを描画するときに使われるシェーダ.
 		GLintptr uboOffset; ///< UBOのエンティティ用領域へのバイトオフセット.
@@ -89,6 +265,7 @@ namespace Entity {
 		CollisionData colWorld; ///< ワールド座標系の衝突形状.
 
 		bool isActive = false; ///< アクティブなエンティティならtrue, 非アクティブならfalse.
+		
 	};
 
 	/**
@@ -100,11 +277,11 @@ namespace Entity {
 		static BufferPtr Create(size_t maxEntityCount, GLsizeiptr ubSizePerEntity,
 			int bindingPoint, const char* name);
 
-		Entity* AddEntity(int groupId, const glm::vec3& pos, const Mesh::MeshPtr& m,
+		Entity* AddEntity(int groupId, const glm::vec3& pos,
 			const TexturePtr& t, const Shader::ProgramPtr& p, Entity::UpdateFuncType func);
 		void RemoveEntity(Entity* entity);
 		void Update(double delta, const glm::mat4& matView, const glm::mat4& matProj);
-		void Draw(const Mesh::BufferPtr& meshBuffer) const;
+		void Draw() const;
 
 		void CollisionHandler(int gid0, int gid1, CollisionHandlerType handler);
 		const CollisionHandlerType& CollisionHandler(int gid0, int gid1) const;
@@ -112,6 +289,7 @@ namespace Entity {
 		
 		const UniformBufferPtr& UniformBuffer()const { return ubo; }
 
+		void DestoroyAllEntity();
 	private:
 		Buffer() = default;
 		~Buffer() = default;

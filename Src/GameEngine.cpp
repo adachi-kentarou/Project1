@@ -6,72 +6,13 @@
 #include "Audio.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
+#include "Constants.h"
+//using namespace Charactor;
+
+//トップNode
+Node* GameEngine::world;
 
 namespace /* unnamed */ {
-
-	/// 頂点データ型.
-	struct Vertex
-	{
-		glm::vec3 position; ///< 座標.
-		glm::vec4 color; ///< 色.
-		glm::vec2 texCoord; ///< テクスチャ座標.
-	};
-
-	const Vertex vertices[] = {
-		{ { -0.5f, -0.3f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f } },
-		{ { 0.3f, -0.3f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f } },
-		{ { 0.3f,  0.5f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f } },
-		{ { -0.5f,  0.5f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
-
-		{ { -0.3f,  0.3f, 0.1f },{ 0.0f, 0.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
-		{ { -0.3f, -0.5f, 0.1f },{ 0.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f } },
-		{ { 0.5f, -0.5f, 0.1f },{ 0.0f, 0.0f, 1.0f, 1.0f },{ 1.0f, 0.0f } },
-		{ { 0.5f, -0.5f, 0.1f },{ 1.0f, 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f } },
-		{ { 0.5f,  0.3f, 0.1f },{ 1.0f, 1.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
-		{ { -0.3f,  0.3f, 0.1f },{ 1.0f, 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f } },
-
-		{ { -1.0f,-1.0f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f } },
-		{ { 1.0f,-1.0f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 0.0f } },
-		{ { 1.0f, 1.0f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f } },
-		{ { -1.0f, 1.0f, 0.5f },{ 1.0f, 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
-
-	};
-	/// インデックスデータ.
-	const GLuint indices[] = {
-		0, 1, 2, 2, 3, 0,
-		4, 5, 6, 7, 8, 9,
-		10, 11, 12, 12, 13, 10,
-	};
-
-	/**
-	* 部分描画データ.
-	*/
-	struct RenderingPart
-	{
-		GLvoid* offset; ///< 描画開始インデックスのバイトオフセット.
-		GLsizei size; ///< 描画するインデックス数.
-	};
-
-	/**
-	* RenderingPartを作成する.
-	*
-	* @param offset 描画開始インデックスのオフセット(インデックス単位).
-	* @param size 描画するインデックス数.
-	*
-	* @return 作成した部分描画オブジェクト.
-	*/
-	constexpr RenderingPart MakeRenderingPart(GLsizei offset, GLsizei size) {
-		return { reinterpret_cast<GLvoid*>(offset * sizeof(GLuint)), size };
-	}
-
-	/**
-	* 部分描画データリスト.
-	*/
-	static const RenderingPart renderingParts[] = {
-		MakeRenderingPart(0, 12),
-		MakeRenderingPart(12, 6),
-	};
-
 	/**
 	* Vertex Buffer Objectを作成する.
 	*
@@ -146,6 +87,7 @@ namespace /* unnamed */ {
 		SetVertexAttribPointer(0, Vertex, position);
 		SetVertexAttribPointer(1, Vertex, color);
 		SetVertexAttribPointer(2, Vertex, texCoord);
+		SetVertexAttribPointer(3, Vertex, normal);
 		glBindVertexArray(0);
 		glDeleteBuffers(1, &vbo);
 		glDeleteBuffers(1, &ibo);
@@ -197,11 +139,6 @@ bool GameEngine::Init(int w, int h, const char* title)
 		InterfaceBlock::BINDINGPOINT_LIGHTDATA, "LightData");
 	uboPostEffect = UniformBuffer::Create(sizeof(InterfaceBlock::PostEffectData),
 		InterfaceBlock::BINDINGPOINT_POSTEFFECTDATA, "PostEffectData");
-	/*
-	progTutorial = Shader::Program::Create("Res/Tutorial.vert", "Res/Tutorial.frag");
-	progColorFilter = Shader::Program::Create(
-		"Res/ColorFilter.vert", "Res/ColorFilter.frag");
-	*/
 	
 
 	offscreen = OffscreenBuffer::Create(width, height);
@@ -247,6 +184,9 @@ bool GameEngine::Init(int w, int h, const char* title)
 	fontRenderer.Init(1024, glm::vec2(static_cast<float>(w), static_cast<float>(h)), 32);
 
 	isInitialized = true;
+
+	//トップノード
+	world = new Node();
 	return true;
 }
 
@@ -256,18 +196,19 @@ bool GameEngine::Init(int w, int h, const char* title)
 void GameEngine::Run()
 {
 	GLFWEW::Window& window = GLFWEW::Window::Instance();
-	//const double delta = 1.0 / 60.0;
+	const double delta = 1.0 / (double)FPS;
 	double prevTime = glfwGetTime();
+	double time = 0.0f;
 	while (!window.ShouldClose()) {
-		// デバッグ中など特殊な状況でなければありえないと考えられるしきい値.
-		static const double thresholdToInvalidate = 0.25f;
-
-		const double curTime = glfwGetTime();
-		double delta = curTime - prevTime;
-		if (delta >= thresholdToInvalidate) {
-			delta = 1.0 / 60.0;
+		
+		time = glfwGetTime();
+		if (time - prevTime < delta) {
+			//時間に達していなければスキップ
+			continue;
 		}
-		prevTime = curTime;
+		//オーバーした分を足す
+		prevTime = time + (time - prevTime - delta);
+
 
 		Update(delta);
 		Render();
@@ -295,12 +236,13 @@ void GameEngine::UpdateFunc(const UpdateFuncType& func)
 * @retval true  読み込み成功.
 * @retval false 読み込み失敗.
 */
-bool GameEngine::LoadTextureFromFile(const char* filename)
+bool GameEngine::LoadTextureFromFile(const char* filename,const int c, const int v)
 {
 	if (GetTexture(filename)) {
 		return true;
 	}
-	TexturePtr texture = Texture::LoadFromFile(filename);
+	TexturePtr texture = Texture::LoadFromFile(filename,c,v);
+	
 	if (!texture) {
 		return false;
 	}
@@ -324,19 +266,6 @@ const TexturePtr& GameEngine::GetTexture(const char* filename) const
 	}
 	static const TexturePtr dummy;
 	return dummy;
-}
-
-/**
-* メッシュを読み込む.
-*
-* @param filename メッシュファイル名.
-*
-* @retval true  読み込み成功.
-* @retval false 読み込み失敗.
-*/
-bool GameEngine::LoadMeshFromFile(const char* filename)
-{
-	return meshBuffer->LoadMeshFromFile(filename);
 }
 
 /**
@@ -371,7 +300,7 @@ Entity::Entity* GameEngine::AddEntity(int groupId, const glm::vec3& pos,
 
 	const Mesh::MeshPtr& mesh = meshBuffer->GetMesh(meshName);
 	const TexturePtr& tex = textureBuffer.find(texName)->second;
-	return entityBuffer->AddEntity(groupId, pos, mesh, tex, itr->second, func);
+	return entityBuffer->AddEntity(groupId, pos, tex, itr->second, func);
 }
 
 /**
@@ -383,6 +312,52 @@ void GameEngine::RemoveEntity(Entity::Entity* e)
 {
 	entityBuffer->RemoveEntity(e);
 }
+
+
+/**
+*プレイヤーキャラクターを作成する
+*/
+Char::Charactor* GameEngine::CreatePlayerChara() {
+	PlayerCharactor* c = new PlayerCharactor();
+
+	Char::Charactor::Player = c;
+
+	//キャラクターセット作成
+	c->CreateChara();
+	c->SetFunc(&c->UpdateFnc);
+	c->SetRotationOrder(Node::order::YXZ);
+	c->Hp(20);
+	return c;
+}
+
+/**
+*敵キャラクターを作成する
+*/
+Char::Charactor* GameEngine::CreateEnemyChara() {
+	EnemyCharactor* c = new EnemyCharactor();
+	//キャラクターセット作成
+	c->CreateChara();
+
+	c->SetFunc(&c->UpdateFnc);
+	c->SetRotationOrder(Node::order::YXZ);
+	c->Hp(3);
+
+	return c;
+}
+
+/**
+*敵キャラクターを作成する
+*/
+Char::Item* GameEngine::CreateItemChara() {
+	LifeItem* c = new LifeItem();
+	//キャラクターセット作成
+	c->CreateItem();
+
+	c->SetFunc(&c->UpdateFnc);
+	c->SetRotationOrder(Node::order::YXZ);
+	return c;
+}
+
 
 /**
 * ライトを設定する.
@@ -579,6 +554,11 @@ GameEngine::~GameEngine()
 */
 void GameEngine::Update(double delta)
 {
+	//リセットフラグがあるなら削除
+	if (reset) {
+		reset = false;
+		DestroyAllEntity();
+	}
 	GLFWEW::Window::Instance().UpdateGamePad();
 
 	fontRenderer.MapBuffer();
@@ -586,12 +566,46 @@ void GameEngine::Update(double delta)
 	if (updateFunc) {
 		updateFunc(delta);
 	}
-	const glm::mat4x4 matProj = glm::perspective(glm::radians(45.0f),
+
+	const glm::mat4x4 matProj = glm::perspective(glm::radians(zoom),
 		static_cast<float>(width) / static_cast<float> (height), 1.0f, 200.0f);
 	const glm::mat4x4 matView = glm::lookAt(camera.position, camera.target, camera.up);
 	entityBuffer->Update(delta, matView, matProj);
-	//entityBuffer->Update(1.0f / 60.0f, matView, matProj);
 	fontRenderer.UnmapBuffer();
+}
+
+/**
+* NodeとEntityを全て削除.
+*/
+void GameEngine::DestroyAllEntity() {
+	
+	//キャラクター全削除
+	for (int itr = 0; Char::Charactor::CharList.begin() + itr < Char::Charactor::CharList.end(); itr++) {
+		auto itrr = Char::Charactor::CharList.begin() + itr;
+		
+		static_cast<Char::Charactor*>(*itrr)->removeNode();
+
+	}
+	Char::Charactor::CharList.clear();
+
+	//アイテム全削除
+	for (int itr = 0; Char::Item::ItemList.begin() + itr < Char::Item::ItemList.end(); itr++) {
+		auto itrr = Char::Item::ItemList.begin() + itr;
+
+		static_cast<Char::Item*>(*itrr)->removeNode();
+
+	}
+	Char::Item::ItemList.clear();
+	
+	//全エンティティ削除
+	entityBuffer->DestoroyAllEntity();
+	//worldのNodeListを空にする
+	world->nodeList.clear();	
+	meshBuffer.reset();
+	meshBuffer = Mesh::Buffer::Create(10 * 1024, 30 * 1024);
+	entityBuffer.reset();
+	entityBuffer = Entity::Buffer::Create(1024, sizeof(InterfaceBlock::VertexData),
+		InterfaceBlock::BINDINGPOINT_VERTEXDATA, "VertexData");
 }
 
 /**
@@ -601,8 +615,8 @@ void GameEngine::Render() const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, offscreen->GetFramebuffer());
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
+	//glEnable(GL_CULL_FACE);
+	//glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glViewport(0, 0, width, height);
 	glScissor(0, 0, width, height);
@@ -610,21 +624,30 @@ void GameEngine::Render() const
 	glClearDepth(1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	uboLight->BufferSubData(&lightData);
-	entityBuffer->Draw(meshBuffer);
+	
+	//glBindVertexArray(vao);
+	//glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_CULL_FACE);
+	//glDisable(GL_BLEND);
+	glBindVertexArray(vao);
+
+	//entityBuffer->Draw(meshBuffer);
+	entityBuffer->Draw();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
-	glBindVertexArray(vao);
+	//glDisable(GL_CULL_FACE);
+	//glDisable(GL_BLEND);
+	//glBindVertexArray(vao);
+	//entityBuffer->Draw(meshBuffer);
 
 	const Shader::ProgramPtr& progColorFilter = shaderMap.find("ColorFilter")->second;
 	progColorFilter->UseProgram();
 	InterfaceBlock::PostEffectData postEffect;
 	uboPostEffect->BufferSubData(&postEffect);
 	progColorFilter->BindTexture(GL_TEXTURE0, GL_TEXTURE_2D, offscreen->GetTexutre());
-	glDrawElements(GL_TRIANGLES, renderingParts[1].size,
-		GL_UNSIGNED_INT, renderingParts[1].offset);
+	glDrawElements(GL_TRIANGLES, renderingParts[GameState::EntityGroupId::EntityGroupId_Display].size,
+		GL_UNSIGNED_INT, renderingParts[GameState::EntityGroupId::EntityGroupId_Display].offset);
 
 	fontRenderer.Draw();
 }

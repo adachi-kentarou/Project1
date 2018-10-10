@@ -18,7 +18,7 @@ public:
 	static TexturePtr Create(
 		int width, int height, GLenum iformat, GLenum format, const void* data);
 
-	static TexturePtr LoadFromFile(const char*);
+	static TexturePtr LoadFromFile(const char*, const int c = -1, const int v = 0);
 
 	GLuint Id() const { return texId; }
 	GLsizei Width() const { return width; }

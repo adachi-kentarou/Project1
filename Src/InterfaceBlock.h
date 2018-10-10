@@ -17,9 +17,6 @@ namespace InterfaceBlock {
 		glm::mat4 matModel;
 		glm::mat3x4 matNormal;
 		glm::vec4 color;
-		//glm::vec4 lightPosition;
-		//glm::vec4 lightColor;
-		//glm::vec4 ambientColor;
 	};
 
 	/**
