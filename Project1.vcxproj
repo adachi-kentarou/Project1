@@ -83,6 +83,10 @@
       <AdditionalDependencies>opengl32.lib;cri_ware_pcx86_le_import.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>D:\cri\pc\libs\x86;D:\Program Files\Autodesk\2019.0\lib\vs2015\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <CustomBuildStep>
+      <Command>xcopy $(ProjectDir)Res $(ProjectDir)Debug\Res /s/e/i
+xcopy $(ProjectDir)cri\pc\libs\x86\cri_ware_pcx86_le.dll $(ProjectDir)Debug\cri_ware_pcx86_le.dll /s/e/i</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -96,6 +100,10 @@
       <AdditionalDependencies>opengl32.lib;cri_ware_pcx86_le_import.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>D:\cri\pc\libs\x86;D:\Program Files\Autodesk\2019.0\lib\vs2015\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <CustomBuildStep>
+      <Command>xcopy $(ProjectDir)Res $(ProjectDir)Debug\Res /s/e/i
+xcopy $(ProjectDir)cri\pc\libs\x86\cri_ware_pcx86_le.dll $(ProjectDir)Debug\cri_ware_pcx86_le.dll /s/e/i</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
