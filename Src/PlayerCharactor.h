@@ -21,6 +21,7 @@ public:
 
 	void DamageAnimation();
 
+	void DeleteAnimation();
 };
 
 #endif

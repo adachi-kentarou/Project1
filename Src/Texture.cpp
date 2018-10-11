@@ -160,25 +160,42 @@ TexturePtr Texture::LoadFromFile(const char* filename, const int c, const int v)
 
 	//指定色の閾値範囲内のアルファを0にする
 	if (c != -1) {
-		for (auto itr = buf.begin() + offsetBytes; itr != buf.end();itr++) {
-			//画像のRGB
-			int b = *itr >> 8 & 0xff;
-			int g = *itr >> 16 & 0xff;
-			int r = *itr >> 24 & 0xff;
+		uint32_t* textureData = new uint32_t[width * height];
+		
+		int cc[] = { 0, 3, 2, 1 };
+		int d = cc[width * 3 % 4];
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				int base = (i * width + j) * 3 + (d * i);
+				int b = *(buf.begin() + offsetBytes + base);
+				int g = *(buf.begin() + offsetBytes + base + 1);
+				int r = *(buf.begin() + offsetBytes + base + 2);
 
-			//閾値のRGB
-			int cb = c & 0xff;
-			int cg = c >> 8 & 0xff;
-			int cr = c >> 16 & 0xff;
+				int color = 0;
 
-			if (!(cr - v <= r && cr + v >= r &&
-				cg - v <= g && cg + v >= g &&
-				cb - v <= b && cb + v >= b
-				)) {
-				//画像が閾値以内であればアルファ0に変更
-				*itr &= 0x0000ffff;
+				//閾値のRGB
+				int cb = c & 0xff;
+				int cg = c >> 8 & 0xff;
+				int cr = c >> 16 & 0xff;
+
+				if (!(cr - v <= r && cr + v >= r &&
+					cg - v <= g && cg + v >= g &&
+					cb - v <= b && cb + v >= b
+					)) {
+					//画像が閾値以内であればアルファ0に変更
+					color = 0xff << 24;
+				}
+
+				color += b << 16;
+				color += g << 8;
+				color += r;
+				textureData[i * width + j] = color;
+				
 			}
 		}
+		
+		return Texture::Create(width, height, GL_RGBA8, GL_RGBA, textureData);
+		
 	}
 	
 	

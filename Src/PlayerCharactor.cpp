@@ -278,7 +278,15 @@ ANIMATION:;
 				if (n->Hp() <= 0) {
 					LoadState::LoadGame::mapdata[n->pos.x][n->pos.y][n->pos.z].chara = nullptr;
 
-					//n->DeleteAnimation();
+					n->DeleteAnimation();
+				}
+			}
+			else if (n->animType == 3) {
+				//ゲームオーバーアニメーション
+				if (n->movecount == 1) {
+					//終了
+					n->Velocity({ 0.0f,0.0f,0.0f });
+					n->RotateVelocity({ 0.0f,0.0f, 0.0f });
 				}
 			}
 		}
@@ -348,4 +356,16 @@ void PlayerCharactor::DamageAnimation() {
 	RotateVelocity({ 5.0f, 0.0f, 0.0f });
 	movecount = 14;
 	animType = 2;
+}
+
+/**
+*削除アニメーションスタート設定
+*/
+void PlayerCharactor::DeleteAnimation() {
+	GameEngine & game = GameEngine::Instance();
+	game.PlayAudio(GameState::AudioPlayerId::AudioPlayerId_Bomb, CRI_SAMPLECUESHEET_BOMB);
+	Velocity({ 0.0f,-0.15f,0.0f });
+	RotateVelocity({ 10.0f,0.0f, 0.0f });
+	movecount = 9;
+	animType = 3;
 }

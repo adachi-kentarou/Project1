@@ -217,14 +217,17 @@ int main()
 
 	game.LoadTextureFromFile("Res/Wall.bmp");
 	
-	game.LoadTextureFromFile("Res/Life.bmp",0xffffff,10);
+	game.LoadTextureFromFile("Res/Life.bmp", 0xffffff, 10);
 
 	game.LoadTextureFromFile("Res/Star.bmp");
 	
 	game.LoadTextureFromFile("Res/Cloud.bmp");
 
+	game.LoadTextureFromFile("Res/Red.bmp");
+
 	game.LoadFontFromFile("Res/Font.fnt");
 	
+	//game.LoadTextureFromFile("Res/Red.bmp", 0xffffff, 10);
 	game.UpdateFunc(GameState::Title());
 	game.Run();
 	return 0;
