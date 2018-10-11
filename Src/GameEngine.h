@@ -87,7 +87,8 @@ public:
 
 	Char::Charactor* CreatePlayerChara();
 	Char::Charactor* CreateEnemyChara();
-	Char::Item* GameEngine::CreateItemChara();
+	Char::Item* GameEngine::CreateLifeItemChara();
+	Char::Item* GameEngine::CreateTimeItemChara();
 
 	void DestroyAllEntity();
 

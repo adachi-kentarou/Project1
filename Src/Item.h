@@ -7,7 +7,6 @@
 
 class LifeItem:public Char::Item {
 public:
-	
 	std::function<void(LifeItem*)> updfnc = nullptr;
 	void SetFunc(std::function<void(LifeItem*)> fnc) { updfnc = fnc; };
 	static void UpdateFnc(LifeItem* n);
@@ -15,7 +14,18 @@ public:
 	void DeleteAnimation();
 	void Update();
 
-	virtual void GetItem(Char::Charactor* c);
+	void GetItem(Char::Charactor* c);
 };
 
+class TimeItem :public Char::Item {
+public:
+	std::function<void(TimeItem*)> updfnc = nullptr;
+	void SetFunc(std::function<void(TimeItem*)> fnc) { updfnc = fnc; };
+	static void UpdateFnc(TimeItem* n);
+
+	void DeleteAnimation();
+	void Update();
+
+	void GetItem(Char::Charactor* c);
+};
 #endif

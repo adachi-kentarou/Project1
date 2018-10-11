@@ -341,7 +341,7 @@ namespace Char {
 	/**
 	*ƒAƒCƒeƒ€ì¬
 	*/
-	Item* Item::CreateItem() {
+	Item* Item::CreateItem(char* tex) {
 		GameEngine& game = GameEngine::Instance();
 		glm::vec3 pos;
 		RotateVelocity({ 0.0f,0.0f,0.0f });

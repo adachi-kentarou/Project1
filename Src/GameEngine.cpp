@@ -346,18 +346,29 @@ Char::Charactor* GameEngine::CreateEnemyChara() {
 }
 
 /**
-*敵キャラクターを作成する
+*ライフアイテムを作成する
 */
-Char::Item* GameEngine::CreateItemChara() {
+Char::Item* GameEngine::CreateLifeItemChara() {
 	LifeItem* c = new LifeItem();
 	//キャラクターセット作成
-	c->CreateItem();
+	c->CreateItem("Res/Life.bmp");
 
 	c->SetFunc(&c->UpdateFnc);
 	c->SetRotationOrder(Node::order::YXZ);
 	return c;
 }
+/**
+*ライフアイテムを作成する
+*/
+Char::Item* GameEngine::CreateTimeItemChara() {
+	TimeItem* c = new TimeItem();
+	//キャラクターセット作成
+	c->CreateItem("Res/Time.bmp");
 
+	c->SetFunc(&c->UpdateFnc);
+	c->SetRotationOrder(Node::order::YXZ);
+	return c;
+}
 
 /**
 * ライトを設定する.

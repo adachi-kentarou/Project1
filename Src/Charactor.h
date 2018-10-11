@@ -94,7 +94,7 @@ namespace Char {
 	public:
 		~Item();
 		//テクスチャー
-		char* tex = "Res/Life.bmp";
+		//char* tex = "Res/Life.bmp";
 		//座標
 		struct position {
 			unsigned int x = 0;
@@ -103,7 +103,7 @@ namespace Char {
 		};
 		struct position pos;
 
-		Item* CreateItem();
+		virtual Item* CreateItem(char* tex);
 
 		static std::vector<Char::Item*> ItemList;
 

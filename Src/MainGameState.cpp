@@ -172,7 +172,18 @@ namespace GameState {
 
 			//アイテム配置
 			for (int i = 0; i < STAGE_ITEM + STAGE_ITEM_UP * GameState::MainGame::stageno; i++) {
-				it = game.CreateItemChara();
+				const std::uniform_real_distribution<float> rnd(0.0f, 1.0f);
+
+				if (rnd(game.Rand()) < 0.5f) {
+					//回復アイテム
+					it = game.CreateLifeItemChara();
+				}
+				else {
+					//時間延長アイテム
+					it = game.CreateTimeItemChara();
+				}
+				
+				
 				p = it->GetMapPosition();
 				it->SetMapPosition(p.x, p.y, p.z);
 				GameEngine::world->addNode(it);

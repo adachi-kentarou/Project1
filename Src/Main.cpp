@@ -219,11 +219,11 @@ int main()
 	
 	game.LoadTextureFromFile("Res/Life.bmp", 0xffffff, 10);
 
+	game.LoadTextureFromFile("Res/Time.bmp", 0xffffff, 10);
+
 	game.LoadTextureFromFile("Res/Star.bmp");
 	
 	game.LoadTextureFromFile("Res/Cloud.bmp");
-
-	game.LoadTextureFromFile("Res/Red.bmp");
 
 	game.LoadFontFromFile("Res/Font.fnt");
 	
