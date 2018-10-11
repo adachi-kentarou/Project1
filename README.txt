@@ -23,6 +23,14 @@ Resディレクトリーを
 Debugディレクトリーにコピーする必要があります
 （カスタムビルドステップで自動でコピーするようにしていますがコピーに失敗した場合は
 手動でコピーしてください）
+visual studioがインストールされていない環境でも実行できるようにする場合Debugディレクトリーに
+msvcp140d.dll
+ucrtbased.dll
+vcruntime140d.dll
+msvcp140.dll
+vccorlib140.dll
+vcruntime140.dll
+をインターネット上から入手しコピーする必要があります。
 
 ゲーム実行方法
 プロジェクトディレクトリ直下Debug/Project1.exeを実行
@@ -46,7 +54,11 @@ HPが0になるか制限時間が過ぎるとゲームオーバー
 約3か月
 
 工夫した点
+●定数ファイルを作成しゲームの設定を管理するようにした
+Constants.h
+
 ●VBO,VAO,IBOを作成し処理の効率化を図った
+
 ●ゲームエンジンを作成しVBO,VAO,IBO,メインループ処理、描画処理を管理するようにした
 Src/GameEngine.h
 Src/GameEngine.cpp
