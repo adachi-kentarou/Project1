@@ -394,12 +394,15 @@ namespace LoadState {
 				}
 			}
 			char* str = "";
-			switch (GameState::MainGame::stageno) {
+			switch (GameState::MainGame::stageno % 3) {
 			case 1:
 				str = "Res/Star.bmp";
 				break;
 			case 2:
 				str = "Res/Cloud.bmp";
+				break;
+			case 0:
+				str = "Res/SpaceSphere.bmp";
 				break;
 			default:
 				str = "Res/SpaceSphere.bmp";
