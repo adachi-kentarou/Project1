@@ -60,6 +60,8 @@ void PlayerCharactor::UpdateFnc(PlayerCharactor* n) {
 			}
 		} 
 		else if ((gamepad.buttons & GamePad::DPAD_UP) || (gamepad.buttons & GamePad::DPAD_DOWN)) {
+			//方向候補リスト　0=候補なし 1=直進　2=上がり 3=下がり
+			int direction[3] = { 0,0,0 };
 			int updown;
 			if (gamepad.buttons & GamePad::DPAD_UP) {
 				updown = 1;
@@ -67,24 +69,67 @@ void PlayerCharactor::UpdateFnc(PlayerCharactor* n) {
 			else {
 				updown = -1;
 			}
-			LoadState::MapData map1;
-			bool map1flg = n->MapInJudge(n->vecx[n->vec] * updown, 0, n->vecz[n->vec] * updown);
-			if (map1flg) {
-				map1 = LoadState::LoadGame::mapdata[n->pos.x + (n->vecx[n->vec] * updown)][n->pos.y][n->pos.z + (n->vecz[n->vec] * updown)];
+			for (int i = 0; i < 3; i++) {
+				int v = n->vec + i - 1;
+				if (v > 3)v = 0;
+				if (v < 0)v = 3;
+
+				LoadState::MapData map1;
+				bool map1flg = n->MapInJudge(n->vecx[v] * updown, 0, n->vecz[v] * updown);
+				if (map1flg) {
+					map1 = LoadState::LoadGame::mapdata[n->pos.x + (n->vecx[v] * updown)][n->pos.y][n->pos.z + (n->vecz[v] * updown)];
+
+				}
+				LoadState::MapData map2;
+				bool map2flg = n->MapInJudge(n->vecx[v] * updown, 1, n->vecz[v] * updown);
+				if (map2flg) {
+					map2 = LoadState::LoadGame::mapdata[n->pos.x + (n->vecx[v] * updown)][n->pos.y + 1][n->pos.z + (n->vecz[v] * updown)];
+				}
+				LoadState::MapData map3;
+				bool map3flg = n->MapInJudge(n->vecx[v] * updown, -1, n->vecz[v] * updown);
+				if (map3flg) {
+					map3 = LoadState::LoadGame::mapdata[n->pos.x + (n->vecx[v] * updown)][n->pos.y - 1][n->pos.z + (n->vecz[v] * updown)];
+				}
+				//直進
+				if (map1flg && map1.chara == nullptr && map1.tile && map1.stair != 2) {
+					direction[i] = 1;
+
+				}
+				else if (map2flg && map2.chara == nullptr && map2.tile && map2.stair != 2) {
+					//階段上がり
+					direction[i] = 2;
+
+				}
+				else if (map3flg && map3.chara == nullptr && map3.tile) {
+					//階段下がり
+					direction[i] = 3;
+
+				}
 
 			}
-			LoadState::MapData map2;
-			bool map2flg = n->MapInJudge(n->vecx[n->vec] * updown, 1, n->vecz[n->vec] * updown);
-			if (map2flg) {
-				map2 = LoadState::LoadGame::mapdata[n->pos.x + (n->vecx[n->vec] * updown)][n->pos.y + 1][n->pos.z + (n->vecz[n->vec] * updown)];
+
+			int dir = 0;
+			
+			if (direction[1]) {
+				//直進
+				dir = direction[1];
 			}
-			LoadState::MapData map3;
-			bool map3flg = n->MapInJudge(n->vecx[n->vec] * updown, -1, n->vecz[n->vec] * updown);
-			if (map3flg) {
-				map3 = LoadState::LoadGame::mapdata[n->pos.x + (n->vecx[n->vec] * updown)][n->pos.y - 1][n->pos.z + (n->vecz[n->vec] * updown)];
+			else if (direction[2] && !direction[0]) {
+				//右回転
+				dir = direction[2];
+				rot.y = 4.5f;
+				n->vec += 1;
+				if (n->vec == 4) { n->vec = 0; }
+			}
+			else if (direction[0] && !direction[2]) {
+				//左回転
+				dir = direction[0];
+				rot.y = -4.5f;
+				n->vec -= 1;
+				if (n->vec == -1) { n->vec = 3; }
 			}
 			//直進
-			if (map1flg && map1.chara == nullptr && map1.tile && map1.stair != 2){
+			if (dir == 1) {
 				n->bepos.x = n->pos.x;
 				n->bepos.y = n->pos.y;
 				n->bepos.z = n->pos.z;
@@ -98,9 +143,9 @@ void PlayerCharactor::UpdateFnc(PlayerCharactor* n) {
 
 				vec.z = n->vecz[n->vec] * 0.1f * updown;
 				vec.x = n->vecx[n->vec] * 0.1f * updown;
-				
+
 			}
-			else if (map2flg && map2.chara == nullptr && map2.tile && map2.stair != 2) {
+			else if (dir == 2) {
 				//階段上がり
 				n->bepos.x = n->pos.x;
 				n->bepos.y = n->pos.y;
@@ -119,7 +164,7 @@ void PlayerCharactor::UpdateFnc(PlayerCharactor* n) {
 				vec.x = n->vecx[n->vec] * 0.1f * updown;
 
 			}
-			else if (map3flg && map3.chara == nullptr && map3.tile) {
+			else if (dir == 3) {
 				//階段下がり
 				n->bepos.x = n->pos.x;
 				n->bepos.y = n->pos.y;
@@ -138,7 +183,7 @@ void PlayerCharactor::UpdateFnc(PlayerCharactor* n) {
 				vec.x = n->vecx[n->vec] * 0.1f * updown;
 
 			}
-			
+
 		}
 		if (gamepad.mouseClick) {
 		
@@ -202,7 +247,7 @@ ANIMATION:;
 		}
 		else if(n->animType == 1){
 			//移動アニメーション
-			if (n->movecount == 10 && !n->RotateVelocity().y) {
+			if (n->movecount == 10 && (n->Velocity().x || n->Velocity().y || n->Velocity().z)) {
 				glm::vec3 vec = n->Velocity();
 
 				if (LoadState::LoadGame::mapdata[n->pos.x][n->pos.y][n->pos.z].stair == 1) {

@@ -369,6 +369,7 @@ namespace LoadState {
 										rot = glm::vec3({ 0.0f,0.0f,0.0f });
 									}
 									else if (MapInJudge(i + 1, j + 1, k)) {
+						
 										rot = glm::vec3({ 0.0f,90.0f,0.0f });
 									}
 									else if (MapInJudge(i, j + 1, k - 1)) {
@@ -413,7 +414,7 @@ namespace LoadState {
 				glm::vec3(0.0f, 0.0f, 0.0f),
 				"Toroid", str,
 				nullptr,"NonLighting")) {
-				background->Scale({30.0f,30.0f, 30.0f});
+				background->Scale({50.0f,50.0f, 50.0f});
 				background->RotateVelocity({ 0.0f,0.1f,0.0f });
 				
 				GameEngine::world->addNode(background);
