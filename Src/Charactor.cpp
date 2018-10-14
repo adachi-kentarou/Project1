@@ -112,7 +112,14 @@ namespace Char {
 				for (int k = 0; k < 10; k++) {
 					if (LoadState::LoadGame::mapdata[i][j][k].tile &&
 						LoadState::LoadGame::mapdata[i][j][k].stair != 2 &&
-						LoadState::LoadGame::mapdata[i][j][k].chara == nullptr) {
+						LoadState::LoadGame::mapdata[i][j][k].chara == nullptr &&
+						!(Char::Charactor::Player->pos.x  + 1 <= i &&
+						Char::Charactor::Player->pos.x - 1 >= i &&
+						Char::Charactor::Player->pos.y + 1 <= j &&
+						Char::Charactor::Player->pos.y - 1 >= j &&
+						Char::Charactor::Player->pos.z + 1 <= k &&
+						Char::Charactor::Player->pos.z - 1 >= k
+						)) {
 						m.push_back({i,j,k});
 					}
 				}
