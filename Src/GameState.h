@@ -77,6 +77,7 @@ namespace GameState {
 
 		bool enemyaction = false;
 
+		int start = 180;
 	};
 
 

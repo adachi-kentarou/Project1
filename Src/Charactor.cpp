@@ -156,7 +156,7 @@ namespace Char {
 		//‘Ì
 		pos = glm::vec3(0, 0, 0);
 		if (pBody = game.AddEntity(
-			GameState::EntityGroupId_Cube, pos, "Toroid", "Res/Wall.bmp", UpdateTest())) {
+			GameState::EntityGroupId_Cube, pos, "Toroid", "", UpdateTest())) {
 			pBody->Scale({ 1.0f, 1.0f, 0.5f });
 			pBody->RotateVelocity({ 0.0f, 0.0f, 0.0f });
 			pBody->SetRotationOrder(Entity::Entity::order::XZY);
@@ -176,7 +176,7 @@ namespace Char {
 		//‰EŽèEntity
 		pos = glm::vec3(1, 0, 0);
 		if (pRarm = game.AddEntity(
-			GameState::EntityGroupId_Cube, pos, "Toroid", "Res/Wall.bmp", UpdateTest())) {
+			GameState::EntityGroupId_Cube, pos, "Toroid", "", UpdateTest())) {
 			pRarm->Velocity({ 0.0f, 0.0f, 0.0f });
 			pRarm->Scale({ 1.0f, 0.2f, 0.2f });
 			pRarm->SetRotationOrder(Entity::Entity::order::XZY);
@@ -192,7 +192,7 @@ namespace Char {
 		//¶Žè
 		pos = glm::vec3(-1, 0, 0);
 		if (pLarm = game.AddEntity(
-			GameState::EntityGroupId_Cube, pos, "Toroid", "Res/Wall.bmp", UpdateTest())) {
+			GameState::EntityGroupId_Cube, pos, "Toroid", "", UpdateTest())) {
 			pLarm->Velocity({ 0.0f, 0.0f, 0.0f });
 			pLarm->Scale({ 1.0f, 0.2f, 0.2f });
 			pLarm->SetRotationOrder(Entity::Entity::order::XYZ);
@@ -209,7 +209,7 @@ namespace Char {
 		//‰E‘«
 		pos = glm::vec3(0, -1, 0);
 		if (pRleg = game.AddEntity(
-			GameState::EntityGroupId_Cube, pos, "Toroid", "Res/Wall.bmp", UpdateTest())) {
+			GameState::EntityGroupId_Cube, pos, "Toroid", "", UpdateTest())) {
 			pRleg->Velocity({ 0.0f, 0.0f, 0.0f });
 			pRleg->Scale({ 0.3f, 1.0f, 0.3f });
 			pRleg->SetRotationOrder(Entity::Entity::order::YXZ);
@@ -224,7 +224,7 @@ namespace Char {
 		//¶‘«
 		pos = glm::vec3(0, -1, 0);
 		if (pLleg = game.AddEntity(
-			GameState::EntityGroupId_Cube, pos, "Toroid", "Res/Wall.bmp", UpdateTest())) {
+			GameState::EntityGroupId_Cube, pos, "Toroid", "", UpdateTest())) {
 			pLleg->Velocity({ 0.0f, 0.0f, 0.0f });
 			pLleg->Scale({ 0.3f, 1.0f, 0.3f });
 			pLleg->SetRotationOrder(Entity::Entity::order::YXZ);

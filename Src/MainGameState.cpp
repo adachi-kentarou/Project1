@@ -295,6 +295,15 @@ namespace GameState {
 		game.AddString(glm::vec2(200.0f, 8.0f), str);
 		game.FontColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
+		//ゲームスタート
+		if (start) {
+			game.FontColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+			game.FontScale(glm::vec2(3.0f, 3.0f));
+			game.AddString(glm::vec2(130.0f, 260.0f), "GAME START");
+			start--;
+		}
+
+
 		//ゲームオーバー
 		if (Char::Charactor::Player->Hp() == 0) {
 			if (time == 0) {
