@@ -225,6 +225,8 @@ int main()
 	
 	game.LoadTextureFromFile("Res/Cloud.bmp");
 
+	game.LoadTextureFromFile("Res/Enemy.bmp");
+
 	game.LoadFontFromFile("Res/Font.fnt");
 	
 	//game.LoadTextureFromFile("Res/Red.bmp", 0xffffff, 10);

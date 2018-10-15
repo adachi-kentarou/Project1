@@ -18,6 +18,7 @@ namespace GameState {
 		EntityGroupId_Stair1,
 		EntityGroupId_Stair2,
 		EntityGroupId_Image,
+		EntityGroupId_Enemy,
 	};
 
 	/// ‰¹ºƒvƒŒƒCƒ„[‚ÌID.

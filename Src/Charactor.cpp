@@ -166,7 +166,7 @@ namespace Char {
 		//“ª
 		pos = glm::vec3(0, 1.6f, 0);
 		if (pHead = game.AddEntity(
-			GameState::EntityGroupId_Cube, pos, "Toroid", "Res/Wall.bmp", UpdateTest())) {
+			GameState::EntityGroupId_Enemy, pos, "Toroid", "Res/Enemy.bmp", UpdateTest())) {
 			pHead->Scale({ 0.6f, 0.6f, 0.6f });
 			pHead->RotateVelocity({ 0.0f, 0.0f, 0.0f });
 			pHead->SetRotationOrder(Entity::Entity::order::XYZ);

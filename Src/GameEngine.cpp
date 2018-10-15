@@ -340,6 +340,7 @@ Char::Charactor* GameEngine::CreateEnemyChara() {
 
 	c->SetFunc(&c->UpdateFnc);
 	c->SetRotationOrder(Node::order::YXZ);
+	c->SetColor({1.0f,0.0f,0.0f,0.0f});
 	c->Hp(3);
 
 	return c;
