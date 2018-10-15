@@ -40,7 +40,6 @@ void PlayerCharactor::UpdateFnc(PlayerCharactor* n) {
 			goto ANIMATION;
 		}
 		else if (gamepad.buttons & GamePad::DPAD_LEFT) {
-			//vec.x = 0.1f;
 			rot.y = 4.5f;
 			if (n->vec == 3) {
 				n->vec = 0;
@@ -50,7 +49,6 @@ void PlayerCharactor::UpdateFnc(PlayerCharactor* n) {
 			}
 		}
 		else if (gamepad.buttons & GamePad::DPAD_RIGHT) {
-			//vec.x = -0.1f;
 			rot.y = -4.5f;
 			if (n->vec == 0) {
 				n->vec = 3;
@@ -58,17 +56,27 @@ void PlayerCharactor::UpdateFnc(PlayerCharactor* n) {
 			else {
 				n->vec--;
 			}
-		} 
-		else if ((gamepad.buttons & GamePad::DPAD_UP) || (gamepad.buttons & GamePad::DPAD_DOWN)) {
+		}
+		else if ((gamepad.buttons & GamePad::DPAD_DOWN)) {
+			rot.y = 9.0f;
+			n->vec += 2;
+			if (n->vec > 3) {
+				n->vec -= 4;
+			}
+		}
+		else if ((gamepad.buttons & GamePad::DPAD_UP)) {
 			//方向候補リスト　0=候補なし 1=直進　2=上がり 3=下がり
 			int direction[3] = { 0,0,0 };
-			int updown;
+			int updown = 1;
+			/*
 			if (gamepad.buttons & GamePad::DPAD_UP) {
 				updown = 1;
 			}
 			else {
 				updown = -1;
 			}
+			*/
+			
 			for (int i = 0; i < 3; i++) {
 				int v = n->vec + i - 1;
 				if (v > 3)v = 0;
